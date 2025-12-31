@@ -1,5 +1,5 @@
 -- main.lua (Modular Version - Updated with Scroll Tab)
-local BASE_URL = "https://raw.githubusercontent.com/doedie00-source/Fullall/refs/heads/main/"
+local BASE_URL = "https://raw.githubusercontent.com/doedie00-source/allinone/refs/heads/main/"
 
 local MODULES = {
     config = BASE_URL .. "config.lua",
