@@ -136,44 +136,30 @@ function ScrollTab:CreateToolbar(parent)
     for _, cfg in ipairs(statConfigs) do
         self:CreateStatControl(toolbar, cfg.key, cfg.name, cfg.color, cfg.pos)
     end
-    
-    -- 1. เส้นขีดคั่น
-    self.UIFactory.CreateLabel({
-        Parent = toolbar,
-        Text = "|",
-        Size = UDim2.new(0, 10, 0, 20),
-        Position = UDim2.new(0, 284, 0, 5), 
-        TextColor = THEME.GlassStroke or Color3.fromRGB(255, 255, 255),
-        TextTransparency = 0.6,
-        TextSize = 25,
-        Font = Enum.Font.Gotham,
-        TextXAlign = Enum.TextXAlignment.Center
-    })
-
-    -- 2. ส่วนแสดงจำนวน Scroll (ขยับมาชิดเส้นขีด)
+    -- 2. ส่วนแสดงจำนวน Scroll (เต็มพื้นที่ + ชิดขวา)
     self.ScrollCounter = self.UIFactory.CreateLabel({
         Parent = toolbar,
         Text = "0 Scrolls",
-        Size = UDim2.new(1, -292, 0, 16), -- แก้ -300 เป็น -292
-        Position = UDim2.new(0, 292, 0, 2), -- แก้ 294 เป็น 292 (ชิดเส้นขีดมากขึ้น)
+        Size = UDim2.new(1, -300, 0, 16), -- เต็มพื้นที่จาก 300 → 360 (เว้นขอบขวา 6px)
+        Position = UDim2.new(0, 294, 0, 2),
         TextColor = THEME.TextWhite,
         TextSize = 10,
         Font = Enum.Font.GothamBold,
-        TextXAlign = Enum.TextXAlignment.Right
+        TextXAlign = Enum.TextXAlignment.Right -- ชิดขวา
     })
-
-    -- 3. ส่วนแสดง Selected (ขยับมาชิดเหมือนกัน)
+    
+    -- 3. ส่วนแสดง Selected (เต็มพื้นที่ + ชิดขวา)
     self.SelectedCounter = self.UIFactory.CreateLabel({
         Parent = toolbar,
         Text = "0 Selected",
-        Size = UDim2.new(1, -292, 0, 14), -- แก้ -300 เป็น -292
-        Position = UDim2.new(0, 292, 0, 14), -- แก้ 294 เป็น 292
+        Size = UDim2.new(1, -300, 0, 14), -- เต็มพื้นที่จาก 300 → 360 (เว้นขอบขวา 6px)
+        Position = UDim2.new(0, 294, 0, 14),
         TextColor = THEME.AccentBlue,
         TextSize = 9,
         Font = Enum.Font.Gotham,
-        TextXAlign = Enum.TextXAlignment.Right
+        TextXAlign = Enum.TextXAlignment.Right -- ชิดขวา
     })
-end    
+end
 
 function ScrollTab:CreateStatControl(parent, statKey, displayName, color, xPos)
     local THEME = self.Config.THEME
