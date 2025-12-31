@@ -115,62 +115,60 @@ end
 function ScrollTab:CreateToolbar(parent)
     local THEME = self.Config.THEME
     
-    -- กรอบหลัก (Size 360px)
+    -- [แก้ตำแหน่ง] ให้ชิดขอบขวาสุดแบบ 100%
     local toolbar = self.UIFactory.CreateFrame({
         Parent = parent,
-        Size = UDim2.new(0, 360, 0, 30), 
-        Position = UDim2.new(1, -368, 0, 8), 
+        Size = UDim2.new(0, 350, 0, 30), -- ความกว้าง 350px เท่าเดิม (กำลังสวย)
         BgColor = THEME.CardBg,
         Corner = true,
         Stroke = true
     })
     
-    -- คำนวณตำแหน่ง Stat ต่างๆ (จบที่ประมาณ pixel ที่ 283)
+    -- [สำคัญ] ตั้งจุดอ้างอิงเป็น "ขวาบน" (1, 0)
+    toolbar.AnchorPoint = Vector2.new(1, 0)
+    -- สั่งให้ตำแหน่งไปอยู่ที่ขวาสุด (Scale 1) ลบออก 6px (เผื่อที่ว่างนิดนึงไม่ให้ติด scrollbar)
+    toolbar.Position = UDim2.new(1, -6, 0, 8)
+    
+    -- ส่วนประกอบด้านใน (จัดวางเหมือนเดิม เพราะในรูปสวยแล้ว)
     local statConfigs = {
-        {key = "Damage", name = "DMG", color = THEME.TextWhite, pos = 6},
-        {key = "MaxHealth", name = "HP", color = THEME.TextWhite, pos = 100},
-        {key = "Exp", name = "XP", color = THEME.TextWhite, pos = 194}
+        {key = "Damage", name = "DMG", color = THEME.Fail, pos = 5},
+        {key = "MaxHealth", name = "HP", color = THEME.Success, pos = 92},
+        {key = "Exp", name = "XP", color = THEME.Warning, pos = 179}
     }
     
     for _, cfg in ipairs(statConfigs) do
         self:CreateStatControl(toolbar, cfg.key, cfg.name, cfg.color, cfg.pos)
     end
     
-    -- 1. เส้นขีดคั่น (ขยับมาที่ 284 ให้ชิดปุ่ม XP มากขึ้น)
-    self.UIFactory.CreateLabel({
-        Parent = toolbar,
-        Text = "|",
-        Size = UDim2.new(0, 10, 0, 20),
-        Position = UDim2.new(0, 284, 0, 5), 
-        TextColor = THEME.GlassStroke or Color3.fromRGB(255, 255, 255),
-        TextTransparency = 0.6,
-        TextSize = 12,
-        Font = Enum.Font.Gotham,
-        TextXAlign = Enum.TextXAlignment.Center
-    })
+    -- เส้นคั่นแนวตั้ง
+    local div = Instance.new("Frame", toolbar)
+    div.Size = UDim2.new(0, 1, 0, 18)
+    div.Position = UDim2.new(0, 268, 0, 6)
+    div.BackgroundColor3 = THEME.GlassStroke or Color3.fromRGB(255, 255, 255)
+    div.BackgroundTransparency = 0.8
+    div.BorderSizePixel = 0
     
-    -- 2. ส่วนแสดงจำนวน Scroll (แก้ให้ชิดซ้าย และขยับมาติดเส้นขีดที่ 294)
+    -- จำนวน Scroll (ชิดขวาของกรอบ)
     self.ScrollCounter = self.UIFactory.CreateLabel({
         Parent = toolbar,
         Text = "0 Scrolls",
-        Size = UDim2.new(0, 60, 0, 16),
-        Position = UDim2.new(0, 294, 0, 2), -- ใช้ตำแหน่ง Fix จากซ้ายเลย จะได้ไม่ห่าง
-        TextColor = THEME.TextWhite,
+        Size = UDim2.new(0, 75, 0, 16),
+        Position = UDim2.new(1, -80, 0, 2),
+        TextColor = THEME.AccentBlue,
         TextSize = 10,
         Font = Enum.Font.GothamBold,
-        TextXAlign = Enum.TextXAlignment.Left -- [สำคัญ] เปลี่ยนเป็นชิดซ้าย
+        TextXAlign = Enum.TextXAlignment.Right
     })
     
-    -- 3. ส่วนแสดง Selected (แก้ให้ชิดซ้ายเหมือนกัน)
     self.SelectedCounter = self.UIFactory.CreateLabel({
         Parent = toolbar,
         Text = "0 Selected",
-        Size = UDim2.new(0, 60, 0, 14),
-        Position = UDim2.new(0, 294, 0, 14),
-        TextColor = THEME.AccentBlue,
+        Size = UDim2.new(0, 75, 0, 14),
+        Position = UDim2.new(1, -80, 0, 14),
+        TextColor = THEME.Warning,
         TextSize = 9,
         Font = Enum.Font.Gotham,
-        TextXAlign = Enum.TextXAlignment.Left -- [สำคัญ] เปลี่ยนเป็นชิดซ้าย
+        TextXAlign = Enum.TextXAlignment.Right
     })
 end
 
