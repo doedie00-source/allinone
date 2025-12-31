@@ -1,5 +1,5 @@
--- main.lua (Modular Version)
-local BASE_URL = "https://raw.githubusercontent.com/doedie00-source/allinone/refs/heads/main/"
+-- main.lua (Modular Version - Updated with Scroll Tab)
+local BASE_URL = "https://raw.githubusercontent.com/doedie00-source/Fullall/refs/heads/main/"
 
 local MODULES = {
     config = BASE_URL .. "config.lua",
@@ -13,7 +13,8 @@ local MODULES = {
     players_tab = BASE_URL .. "tabs/players_tab.lua",
     dupe_tab = BASE_URL .. "tabs/dupe_tab.lua",
     inventory_tab = BASE_URL .. "tabs/inventory_tab.lua",
-    auto_crates_tab = BASE_URL .. "tabs/auto_crates_tab.lua", -- ✅ เพิ่มบรรทัดนี้
+    auto_crates_tab = BASE_URL .. "tabs/auto_crates_tab.lua",
+    scroll_tab = BASE_URL .. "tabs/scroll_tab.lua", -- ✅ เพิ่มบรรทัดนี้
 }
 
 local function loadModule(url, name)
@@ -30,7 +31,7 @@ local function loadModule(url, name)
     return func()
 end
 
-print("⚡ Loading Universal Trade System V7.2 (Modular)...")
+print("⚡ Loading Universal Trade System V7.3 (Modular)...")
 
 -- Load Core Modules
 local Config = loadModule(MODULES.config, "config")
@@ -45,14 +46,15 @@ local GUI = loadModule(MODULES.gui, "gui")
 local PlayersTab = loadModule(MODULES.players_tab, "players_tab")
 local DupeTab = loadModule(MODULES.dupe_tab, "dupe_tab")
 local InventoryTab = loadModule(MODULES.inventory_tab, "inventory_tab")
-local AutoCratesTab = loadModule(MODULES.auto_crates_tab, "auto_crates_tab") -- ✅ เพิ่มบรรทัดนี้
+local AutoCratesTab = loadModule(MODULES.auto_crates_tab, "auto_crates_tab")
+local ScrollTab = loadModule(MODULES.scroll_tab, "scroll_tab") -- ✅ เพิ่มบรรทัดนี้
 
 if not (Config and Utils and UIFactory and StateManager and InventoryManager and TradeManager and GUI) then
     error("❌ Critical module failed to load.")
     return
 end
 
-if not (PlayersTab and DupeTab and AutoCratesTab) then -- ✅ เพิ่ม AutoCratesTab ในการเช็ค
+if not (PlayersTab and DupeTab and AutoCratesTab and ScrollTab) then -- ✅ เพิ่ม ScrollTab ในการเช็ค
     error("❌ Tab modules failed to load.")
     return
 end
@@ -82,10 +84,11 @@ local app = GUI.new({
         Players = PlayersTab,
         Dupe = DupeTab,
         Inventory = InventoryTab,
-        AutoCrates = AutoCratesTab -- ✅ เพิ่มบรรทัดนี้
+        AutoCrates = AutoCratesTab,
+        Scroll = ScrollTab -- ✅ เพิ่มบรรทัดนี้
     }
 })
 
 app:Initialize()
 print("✅ System Loaded! Press [T] to toggle.")
-print("🎨 New Modern UI with Modular Architecture")
+print("🎨 New Modern UI with Modular Architecture + Scroll Tab")

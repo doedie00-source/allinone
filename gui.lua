@@ -1,4 +1,4 @@
--- gui.lua
+-- gui.lua (Updated with Scroll Tab Support)
 -- Professional Cyber Blue UI Controller
 
 local Players = game:GetService("Players")
@@ -66,44 +66,40 @@ function GUI:Initialize()
     
     self.ContentArea = Instance.new("Frame", self.MainFrame)
     self.ContentArea.Name = "ContentArea"
-    self.ContentArea.Size = UDim2.new(1, -CONFIG.SIDEBAR_WIDTH - 18, 1, -82) 
+    self.ContentArea.Size = UDim2.new(1, -CONFIG.SIDEBAR_WIDTH - 18, 1, -82)
     self.ContentArea.Position = UDim2.new(0, CONFIG.SIDEBAR_WIDTH + 10, 0, 42)
     self.ContentArea.BackgroundTransparency = 1
     self.ContentArea.BorderSizePixel = 0
 
-    -- Professional Status Bar (Transparent, No Border)
     local StatusBarBg = Instance.new("Frame", self.MainFrame)
     StatusBarBg.Name = "StatusBar"
     StatusBarBg.Size = UDim2.new(1, -16, 0, 28)
     StatusBarBg.Position = UDim2.new(0, 8, 1, -34)
     StatusBarBg.BackgroundColor3 = THEME.GlassBg
-    StatusBarBg.BackgroundTransparency = 0.7  -- โปร่งใสมากขึ้น
+    StatusBarBg.BackgroundTransparency = 0.7
     StatusBarBg.BorderSizePixel = 0
     StatusBarBg.ZIndex = 100
     
     self.UIFactory.AddCorner(StatusBarBg, 6)
-    -- ไม่มีกรอบ (ลบ AddStroke ออก)
     
-    -- Status Label (Clean, No Emojis - Enhanced Visibility)
     self.StatusLabel = self.UIFactory.CreateLabel({
         Parent = StatusBarBg,
         Text = "READY",
         Size = UDim2.new(0.6, 0, 1, 0),
         Position = UDim2.new(0, 12, 0, 0),
-        TextColor = THEME.TextWhite,  -- ขาวสดชัด
+        TextColor = THEME.TextWhite,
         TextSize = 12,
-        Font = Enum.Font.GothamBold,  -- ตัวหนาขึ้น
+        Font = Enum.Font.GothamBold,
         TextXAlign = Enum.TextXAlignment.Left
     })
     
-    -- Info Label (Enhanced Visibility)
     self.InfoLabel = self.UIFactory.CreateLabel({
         Parent = StatusBarBg,
         Text = "",
         Size = UDim2.new(0.4, -12, 1, 0),
         Position = UDim2.new(1, -12, 0, 0),
         AnchorPoint = Vector2.new(1, 0),
-        TextColor = THEME.AccentBlue,  -- สีฟ้าสว่าง
+        TextColor = THEME.AccentBlue,
         TextSize = 11,
         Font = Enum.Font.GothamBold,
         TextXAlign = Enum.TextXAlignment.Right
@@ -150,7 +146,6 @@ function GUI:CreateTitleBar()
     
     self.UIFactory.AddCorner(titleBar, 8)
     
-    -- Title with Professional Styling
     local titleLabel = self.UIFactory.CreateLabel({
         Parent = titleBar,
         Text = "    UNIVERSAL TRADER",
@@ -161,8 +156,6 @@ function GUI:CreateTitleBar()
         TextXAlign = Enum.TextXAlignment.Left
     })
     
-    
-    -- Modern Window Controls
     self.UIFactory.CreateButton({
         Size = UDim2.new(0, 30, 0, 30),
         Position = UDim2.new(1, -34, 0, 4),
@@ -179,7 +172,7 @@ function GUI:CreateTitleBar()
     self.UIFactory.CreateButton({
         Size = UDim2.new(0, 30, 0, 30),
         Position = UDim2.new(1, -68, 0, 4),
-        Text = "—",
+        Text = "–",
         BgColor = THEME.BtnDefault,
         TextColor = THEME.TextGray,
         TextSize = 16,
@@ -207,24 +200,19 @@ function GUI:CreateSidebar()
     self.UIFactory.AddCorner(sidebar, 8)
     self.UIFactory.AddStroke(sidebar, THEME.GlassStroke, 1.5, 0)
     
-    -- Simple Logo
     local logoFrame = Instance.new("Frame", sidebar)
     logoFrame.Size = UDim2.new(1, 0, 0, 50)
     logoFrame.BackgroundTransparency = 1
     
     local logoText = self.UIFactory.CreateLabel({
         Parent = logoFrame,
-        
-        -- [[ แก้ไขตรงนี้ ]] --
         Text = "v" .. CONFIG.VERSION,
         Size = UDim2.new(1, 0, 1, 0),
         TextColor = THEME.AccentBlue,
-        TextSize = 20,               
+        TextSize = 20,
         Font = Enum.Font.GothamBlack
-        ---------------------
     })
     
-    -- Separator Line
     local separator = Instance.new("Frame", sidebar)
     separator.Size = UDim2.new(1, -16, 0, 1)
     separator.Position = UDim2.new(0, 8, 0, 54)
@@ -232,7 +220,6 @@ function GUI:CreateSidebar()
     separator.BackgroundTransparency = 0.3
     separator.BorderSizePixel = 0
     
-    -- Tab Buttons Container
     local btnContainer = Instance.new("Frame", sidebar)
     btnContainer.Size = UDim2.new(1, -12, 1, -68)
     btnContainer.Position = UDim2.new(0, 6, 0, 62)
@@ -245,6 +232,7 @@ function GUI:CreateSidebar()
     self:CreateSidebarButton(btnContainer, "Players", "PLAYERS")
     self:CreateSidebarButton(btnContainer, "Dupe", "DUPE")
     self:CreateSidebarButton(btnContainer, "AutoCrates", "AUTO")
+    self:CreateSidebarButton(btnContainer, "Scroll", "SCROLL") -- ✅ เพิ่มปุ่ม Scroll Tab
 end
 
 function GUI:CreateSidebarButton(parent, tabName, text)
@@ -264,7 +252,6 @@ function GUI:CreateSidebarButton(parent, tabName, text)
         end
     })
     
-    -- Add subtle border
     self.UIFactory.AddStroke(btn, THEME.GlassStroke, 1, 0.7)
     
     self.SidebarButtons[tabName] = btn
@@ -346,6 +333,20 @@ function GUI:SwitchTab(tabName)
             tab:Init(self.ContentArea)
             self.ActiveTabInstance = tab
         
+        -- ✅ เพิ่ม case สำหรับ Scroll Tab
+        elseif tabName == "Scroll" and self.TabsModules.Scroll then
+            local tab = self.TabsModules.Scroll.new({
+                UIFactory = self.UIFactory,
+                StateManager = self.StateManager,
+                InventoryManager = self.InventoryManager,
+                Utils = self.Utils,
+                Config = self.Config,
+                StatusLabel = self.StatusLabel,
+                InfoLabel = self.InfoLabel
+            })
+            tab:Init(self.ContentArea)
+            self.ActiveTabInstance = tab
+        
         elseif tabName == "Inventory" and self.TabsModules.Inventory then
             local tab = self.TabsModules.Inventory.new({
                 UIFactory = self.UIFactory,
@@ -395,9 +396,8 @@ function GUI:StartMonitoring()
         local missingCounter = 0
         
         while self.ScreenGui and self.ScreenGui.Parent do
-            local isTradeActive = self.Utils.IsTradeActive() -- เช็คสถานะเทรด
+            local isTradeActive = self.Utils.IsTradeActive()
 
-            -- ✅ ส่วนที่เพิ่ม: ถ้าเทรดเปิดอยู่ แต่ยังอยู่ที่หน้า Players ให้สลับไป Inventory ทันที
             if isTradeActive and self.StateManager.currentMainTab == "Players" then
                 self:SwitchTab("Inventory")
                 if self.StatusLabel then
@@ -405,19 +405,16 @@ function GUI:StartMonitoring()
                 end
             end
 
-            -- อัปเดตสถานะปุ่มในหน้า Players (Locked/Trade)
             if self.StateManager.currentMainTab == "Players" and self.ActiveTabInstance and self.ActiveTabInstance.UpdateButtonStates then
                 pcall(function() self.ActiveTabInstance:UpdateButtonStates() end)
             end
 
-            -- Logic เดิมสำหรับนับเวลาปิดเทรด
             if isTradeActive then
                 missingCounter = 0
             else
                 missingCounter = missingCounter + 1
             end
             
-            -- ระบบ Reset เมื่อปิดหน้าเทรด
             if missingCounter > CONFIG.TRADE_RESET_THRESHOLD then
                 self.TradeManager.IsProcessing = false
                 
@@ -429,7 +426,6 @@ function GUI:StartMonitoring()
                         self.StateManager:SetStatus("TRADE CLOSED - RESET", THEME.TextGray, self.StatusLabel)
                     end
                     
-                    -- ถ้าเคยอยู่ในหน้า Inventory ให้เด้งกลับไปหน้า Players
                     if wasInInventory then
                         task.wait(0.2)
                         self:SwitchTab("Players")
