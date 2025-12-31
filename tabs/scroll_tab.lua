@@ -59,10 +59,10 @@ end
 function ScrollTab:Init(parent)
     local THEME = self.Config.THEME
     
-    -- Header
+    -- Header (Compact)
     local header = Instance.new("Frame", parent)
     header.Name = "Header"
-    header.Size = UDim2.new(1, 0, 0, 110)
+    header.Size = UDim2.new(1, 0, 0, 48)
     header.BackgroundTransparency = 1
     
     self.UIFactory.CreateLabel({
@@ -87,38 +87,15 @@ function ScrollTab:Init(parent)
         TextXAlign = Enum.TextXAlignment.Left
     })
     
-    -- Counters (Top Right)
-    self.ScrollCounter = self.UIFactory.CreateLabel({
-        Parent = header,
-        Text = "0 Scrolls",
-        Size = UDim2.new(0, 140, 0, 20),
-        Position = UDim2.new(1, -148, 0, 0),
-        TextColor = THEME.Success,
-        TextSize = 12,
-        Font = Enum.Font.GothamBold,
-        TextXAlign = Enum.TextXAlignment.Right
-    })
-    
-    self.SelectedCounter = self.UIFactory.CreateLabel({
-        Parent = header,
-        Text = "0 Selected",
-        Size = UDim2.new(0, 140, 0, 16),
-        Position = UDim2.new(1, -148, 0, 20),
-        TextColor = THEME.Warning,
-        TextSize = 10,
-        Font = Enum.Font.Gotham,
-        TextXAlign = Enum.TextXAlignment.Right
-    })
-    
-    -- Compact Settings Panel
-    self:CreateCompactSettings(header)
+    -- Target Settings Toolbar (Top Right)
+    self:CreateToolbarSettings(header)
     
     -- Accessory List (Grid Layout like inventory_tab)
     self.AccessoryList = self.UIFactory.CreateScrollingFrame({
         Parent = parent,
-        Size = UDim2.new(1, 0, 1, -114),
-        Position = UDim2.new(0, 0, 0, 112),
-        UseGrid = true -- ✅ ใช้ Grid Layout
+        Size = UDim2.new(1, 0, 1, -52),
+        Position = UDim2.new(0, 0, 0, 50),
+        UseGrid = true
     })
     
     local padding = Instance.new("UIPadding", self.AccessoryList)
@@ -304,8 +281,8 @@ function ScrollTab:CreateLockOverlay(parent)
     
     self.LockOverlay = Instance.new("Frame", parent)
     self.LockOverlay.Name = "LockOverlay"
-    self.LockOverlay.Size = UDim2.new(1, 0, 1, -114)
-    self.LockOverlay.Position = UDim2.new(0, 0, 0, 112)
+    self.LockOverlay.Size = UDim2.new(1, 0, 1, -52)
+    self.LockOverlay.Position = UDim2.new(0, 0, 0, 50)
     self.LockOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     self.LockOverlay.BackgroundTransparency = 0.6
     self.LockOverlay.BorderSizePixel = 0
@@ -549,33 +526,51 @@ function ScrollTab:CreateAccessoryCard(guid, info, baseData)
     local isCurrentForging = (self.CurrentForgingItem == guid)
     local isSelected = self.SelectedItems[guid]
     
+    -- ✅ Card พื้นฐานสีเดียวกัน ไม่ว่าจะ reach target หรือไม่
     local Card = self.UIFactory.CreateFrame({
         Parent = self.AccessoryList,
         Size = UDim2.new(0, 92, 0, 115),
-        BgColor = isCurrentForging and Color3.fromRGB(80, 50, 120) or 
-                  (reachedTarget and Color3.fromRGB(40, 80, 40) or THEME.CardBg),
+        BgColor = isCurrentForging and Color3.fromRGB(80, 50, 120) or THEME.CardBg, -- เอาสีเขียวออก
         Corner = true,
         Stroke = true,
         StrokeColor = isCurrentForging and Color3.fromRGB(255, 150, 255) or
-                     (reachedTarget and THEME.Success or
-                     (isSelected and THEME.AccentBlue or THEME.GlassStroke)),
+                     (isSelected and THEME.AccentBlue or THEME.GlassStroke),
         StrokeThickness = isSelected and 2 or 1
     })
     
     -- Icon
     local icon = Instance.new("ImageLabel", Card)
-    icon.Size = UDim2.new(0, 60, 0, 60)
-    icon.Position = UDim2.new(0.5, -30, 0, 8)
+    icon.Size = UDim2.new(0, 50, 0, 50)
+    icon.Position = UDim2.new(0.5, -25, 0, 6)
     icon.Image = "rbxassetid://" .. (baseData.Image or "")
     icon.BackgroundColor3 = THEME.BtnDefault
     icon.BorderSizePixel = 0
     self.UIFactory.AddCorner(icon, 8)
     
+    -- ✅ Status Icon (Top Right) - แสดง checkmark เขียวเมื่อถึงเป้าหมาย
+    if reachedTarget then
+        self.UIFactory.CreateLabel({
+            Parent = Card,
+            Text = "✅",
+            Size = UDim2.new(0, 18, 0, 18),
+            Position = UDim2.new(1, -20, 0, 2),
+            TextSize = 12
+        })
+    elseif isCurrentForging then
+        self.UIFactory.CreateLabel({
+            Parent = Card,
+            Text = "⚙️",
+            Size = UDim2.new(0, 18, 0, 18),
+            Position = UDim2.new(1, -20, 0, 2),
+            TextSize = 12
+        })
+    end
+    
     -- Evolution Stars
     if info.Evolution and tonumber(info.Evolution) > 0 then
         local starContainer = Instance.new("Frame", Card)
-        starContainer.Size = UDim2.new(1, 0, 0, 15)
-        starContainer.Position = UDim2.new(0, 0, 0, 68)
+        starContainer.Size = UDim2.new(1, 0, 0, 12)
+        starContainer.Position = UDim2.new(0, 0, 0, 58)
         starContainer.BackgroundTransparency = 1
         
         local layout = Instance.new("UIListLayout", starContainer)
@@ -583,46 +578,78 @@ function ScrollTab:CreateAccessoryCard(guid, info, baseData)
         layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
         layout.Padding = UDim.new(0, -2)
 
-        for i = 1, tonumber(info.Evolution) do
+        for i = 1, math.min(tonumber(info.Evolution), 3) do
             local s = Instance.new("ImageLabel", starContainer)
-            s.Size = UDim2.new(0, 12, 0, 12)
+            s.Size = UDim2.new(0, 10, 0, 10)
             s.BackgroundTransparency = 1
             s.Image = "rbxassetid://3926305904"
             s.ImageColor3 = THEME.StarColor or Color3.fromRGB(255, 215, 0)
         end
     end
     
-    -- Name + Stats
-    local nameText = info.Name
-    if info.Level then nameText = nameText .. " Lv." .. info.Level end
-    
+    -- Name
     local nameLbl = self.UIFactory.CreateLabel({
         Parent = Card,
-        Text = nameText,
-        Size = UDim2.new(1, -8, 0, 30),
-        Position = UDim2.new(0, 4, 1, -32),
+        Text = info.Name,
+        Size = UDim2.new(1, -8, 0, 14),
+        Position = UDim2.new(0, 4, 0, 72),
         TextSize = 8,
         Font = Enum.Font.GothamBold,
         TextColor = THEME.TextWhite
     })
     nameLbl.TextWrapped = true
     
-    -- Status Icons
-    if reachedTarget then
+    -- ✅ Stats Display (แสดงค่าพลัง DMG/HP/XP)
+    if info.Scroll and info.Scroll.Upgrades then
+        local statsContainer = Instance.new("Frame", Card)
+        statsContainer.Size = UDim2.new(1, -8, 0, 24)
+        statsContainer.Position = UDim2.new(0, 4, 1, -28)
+        statsContainer.BackgroundTransparency = 1
+        
+        local yPos = 0
+        for _, statKey in ipairs(self.ORDERED_STATS) do
+            local val = info.Scroll.Upgrades[statKey]
+            if val then
+                local currentPercent = val * 100
+                local targetPercent = self.TargetSettings[statKey]
+                local statReached = currentPercent >= targetPercent
+                
+                local colorMap = {
+                    Damage = THEME.Fail,
+                    MaxHealth = THEME.Success,
+                    Exp = THEME.Warning
+                }
+                
+                local nameMap = {
+                    Damage = "DMG",
+                    MaxHealth = "HP",
+                    Exp = "XP"
+                }
+                
+                local statLabel = self.UIFactory.CreateLabel({
+                    Parent = statsContainer,
+                    Text = string.format("%s +%d%%", nameMap[statKey], currentPercent) .. (statReached and " ✓" or ""),
+                    Size = UDim2.new(1, 0, 0, 8),
+                    Position = UDim2.new(0, 0, 0, yPos),
+                    TextSize = 7,
+                    Font = Enum.Font.GothamBold,
+                    TextColor = statReached and colorMap[statKey] or THEME.TextDim,
+                    TextXAlign = Enum.TextXAlignment.Left
+                })
+                
+                yPos = yPos + 8
+            end
+        end
+    else
+        -- No Scroll
         self.UIFactory.CreateLabel({
             Parent = Card,
-            Text = "✅",
-            Size = UDim2.new(0, 20, 0, 20),
-            Position = UDim2.new(1, -22, 0, 2),
-            TextSize = 14
-        })
-    elseif isCurrentForging then
-        self.UIFactory.CreateLabel({
-            Parent = Card,
-            Text = "⚙️",
-            Size = UDim2.new(0, 20, 0, 20),
-            Position = UDim2.new(1, -22, 0, 2),
-            TextSize = 14
+            Text = "NO SCROLL",
+            Size = UDim2.new(1, -8, 0, 20),
+            Position = UDim2.new(0, 4, 1, -24),
+            TextSize = 7,
+            Font = Enum.Font.GothamBold,
+            TextColor = THEME.TextDim
         })
     end
     
