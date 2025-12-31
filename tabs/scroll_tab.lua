@@ -41,7 +41,7 @@ function ScrollTab.new(deps)
     self.LockOverlay = nil
     
     self.TargetSettings = {
-        Damage = 35,
+        Damage = 40,
         MaxHealth = 35,
         Exp = 35
     }
@@ -189,8 +189,8 @@ function ScrollTab:CreateStatControl(parent, statKey, displayName, color, xPos)
         TextXAlign = Enum.TextXAlignment.Left
     })
     
-    -- กล่องตัวเลข
-    local valueBox = Instance.new("TextBox", parent)
+    -- [แก้ไข] เปลี่ยนเป็น TextLabel (ไม่ให้พิมพ์เองแล้ว)
+    local valueBox = Instance.new("TextLabel", parent)
     valueBox.Size = UDim2.new(0, 30, 0, 16)
     valueBox.Position = UDim2.new(0, xPos + 25, 0, 7)
     valueBox.BackgroundColor3 = THEME.BtnDefault
@@ -202,18 +202,9 @@ function ScrollTab:CreateStatControl(parent, statKey, displayName, color, xPos)
     valueBox.BorderSizePixel = 0
     self.UIFactory.AddCorner(valueBox, 4)
     
-    valueBox.FocusLost:Connect(function()
-        local num = tonumber(valueBox.Text:gsub("%%", ""))
-        if num and num >= 0 and num <= 40 then
-            self.TargetSettings[statKey] = num
-            valueBox.Text = num .. "%"
-            self.NeedsUpdate = true
-        else
-            valueBox.Text = self.TargetSettings[statKey] .. "%"
-        end
-    end)
+    -- [ลบ] ส่วน FocusLost ออกไปเลย เพราะพิมพ์ไม่ได้แล้ว
     
-    -- ปุ่ม + (สีฟ้า)
+    -- ปุ่ม + (สูงสุด 40)
     local plusBtn = self.UIFactory.CreateButton({
         Parent = parent,
         Size = UDim2.new(0, 15, 0, 16),
@@ -224,14 +215,14 @@ function ScrollTab:CreateStatControl(parent, statKey, displayName, color, xPos)
         Font = Enum.Font.GothamBold,
         OnClick = function()
             if self.TargetSettings[statKey] < 40 then
-                self.TargetSettings[statKey] = math.min(40, self.TargetSettings[statKey] + 5)
+                self.TargetSettings[statKey] = self.TargetSettings[statKey] + 5
                 valueBox.Text = self.TargetSettings[statKey] .. "%"
                 self.NeedsUpdate = true
             end
         end
     })
     
-    -- ปุ่ม -
+    -- ปุ่ม - (ต่ำสุด 30)
     local minusBtn = self.UIFactory.CreateButton({
         Parent = parent,
         Size = UDim2.new(0, 15, 0, 16),
@@ -241,8 +232,8 @@ function ScrollTab:CreateStatControl(parent, statKey, displayName, color, xPos)
         TextSize = 10,
         Font = Enum.Font.GothamBold,
         OnClick = function()
-            if self.TargetSettings[statKey] > 0 then
-                self.TargetSettings[statKey] = math.max(0, self.TargetSettings[statKey] - 5)
+            if self.TargetSettings[statKey] > 30 then
+                self.TargetSettings[statKey] = self.TargetSettings[statKey] - 5
                 valueBox.Text = self.TargetSettings[statKey] .. "%"
                 self.NeedsUpdate = true
             end
