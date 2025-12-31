@@ -116,7 +116,6 @@ end
 function ScrollTab:CreateToolbar(parent)
     local THEME = self.Config.THEME
     
-    -- กรอบหลัก (Size 360px)
     local toolbar = self.UIFactory.CreateFrame({
         Parent = parent,
         Size = UDim2.new(0, 360, 0, 30), 
@@ -126,7 +125,6 @@ function ScrollTab:CreateToolbar(parent)
         Stroke = true
     })
     
-    -- คำนวณตำแหน่ง Stat ต่างๆ
     local statConfigs = {
         {key = "Damage", name = "DMG", color = THEME.TextWhite, pos = 6},
         {key = "MaxHealth", name = "HP", color = THEME.TextWhite, pos = 100},
@@ -137,12 +135,12 @@ function ScrollTab:CreateToolbar(parent)
         self:CreateStatControl(toolbar, cfg.key, cfg.name, cfg.color, cfg.pos)
     end
     
-    -- เส้นขีดคั่น
+    -- เส้นขีด
     self.UIFactory.CreateLabel({
         Parent = toolbar,
         Text = "|",
         Size = UDim2.new(0, 8, 0, 20),
-        Position = UDim2.new(0, 286, 0, 5),
+        Position = UDim2.new(0, 284, 0, 5),
         TextColor = THEME.GlassStroke or Color3.fromRGB(255, 255, 255),
         TextTransparency = 0.6,
         TextSize = 20,
@@ -150,24 +148,24 @@ function ScrollTab:CreateToolbar(parent)
         TextXAlign = Enum.TextXAlignment.Center
     })
 
-    -- 2. ส่วนแสดงจำนวน Scroll (ขยับหลังเส้นขีด)
+    -- Scrolls Counter (ชิดเส้นขีด!)
     self.ScrollCounter = self.UIFactory.CreateLabel({
         Parent = toolbar,
         Text = "0 Scrolls",
-        Size = UDim2.new(1, -296, 0, 16), -- แก้เป็น -296
-        Position = UDim2.new(0, 296, 0, 2), -- แก้เป็น 296 (หลังเส้นขีด + spacing 2px)
+        Size = UDim2.new(1, -294, 0, 16), -- 294 → 360 = 66px
+        Position = UDim2.new(0, 294, 0, 2), -- เริ่มทันทีหลังเส้นขีด
         TextColor = THEME.TextWhite,
         TextSize = 10,
         Font = Enum.Font.GothamBold,
         TextXAlign = Enum.TextXAlignment.Right
     })
     
-    -- 3. ส่วนแสดง Selected
+    -- Selected Counter
     self.SelectedCounter = self.UIFactory.CreateLabel({
         Parent = toolbar,
         Text = "0 Selected",
-        Size = UDim2.new(1, -296, 0, 14), -- แก้เป็น -296
-        Position = UDim2.new(0, 296, 0, 14), -- แก้เป็น 296
+        Size = UDim2.new(1, -294, 0, 14),
+        Position = UDim2.new(0, 294, 0, 14),
         TextColor = THEME.AccentBlue,
         TextSize = 9,
         Font = Enum.Font.Gotham,
