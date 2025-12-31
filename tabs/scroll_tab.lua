@@ -19,6 +19,7 @@ local ForgeRemote = ReplicatedStorage.Packages.Knit.Services.ForgeService.RF.For
 
 local ScrollTab = {}
 ScrollTab.__index = ScrollTab
+
 function ScrollTab.new(deps)
     local self = setmetatable({}, ScrollTab)
     
@@ -136,7 +137,7 @@ function ScrollTab:CreateToolbar(parent)
         self:CreateStatControl(toolbar, cfg.key, cfg.name, cfg.color, cfg.pos)
     end
     
-    -- 1. เส้นขีดคั่น (ขยับมาที่ 284 ให้ชิดปุ่ม XP มากขึ้น)
+    -- 1. เส้นขีดคั่น
     self.UIFactory.CreateLabel({
         Parent = toolbar,
         Text = "|",
@@ -149,28 +150,28 @@ function ScrollTab:CreateToolbar(parent)
         TextXAlign = Enum.TextXAlignment.Center
     })
     
-    -- 2. ส่วนแสดงจำนวน Scroll (แก้ให้ชิดซ้าย และขยับมาติดเส้นขีดที่ 294)
+    -- 2. ส่วนแสดงจำนวน Scroll (เต็มพื้นที่ + ชิดขวา)
     self.ScrollCounter = self.UIFactory.CreateLabel({
         Parent = toolbar,
         Text = "0 Scrolls",
-        Size = UDim2.new(0, 60, 0, 16),
-        Position = UDim2.new(0, 294, 0, 2), -- ใช้ตำแหน่ง Fix จากซ้ายเลย จะได้ไม่ห่าง
+        Size = UDim2.new(1, -300, 0, 16), -- เต็มพื้นที่จาก 300 → 360 (เว้นขอบขวา 6px)
+        Position = UDim2.new(0, 294, 0, 2),
         TextColor = THEME.TextWhite,
         TextSize = 10,
         Font = Enum.Font.GothamBold,
-        TextXAlign = Enum.TextXAlignment.Right -- [สำคัญ] เปลี่ยนเป็นชิดซ้าย
+        TextXAlign = Enum.TextXAlignment.Right -- ชิดขวา
     })
     
-    -- 3. ส่วนแสดง Selected (แก้ให้ชิดซ้ายเหมือนกัน)
+    -- 3. ส่วนแสดง Selected (เต็มพื้นที่ + ชิดขวา)
     self.SelectedCounter = self.UIFactory.CreateLabel({
         Parent = toolbar,
         Text = "0 Selected",
-        Size = UDim2.new(0, 60, 0, 14),
+        Size = UDim2.new(1, -300, 0, 14), -- เต็มพื้นที่จาก 300 → 360 (เว้นขอบขวา 6px)
         Position = UDim2.new(0, 294, 0, 14),
         TextColor = THEME.AccentBlue,
         TextSize = 9,
         Font = Enum.Font.Gotham,
-        TextXAlign = Enum.TextXAlignment.Right -- [สำคัญ] เปลี่ยนเป็นชิดซ้าย
+        TextXAlign = Enum.TextXAlignment.Right -- ชิดขวา
     })
 end
 
