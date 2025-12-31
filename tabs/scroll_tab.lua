@@ -137,6 +137,7 @@ function ScrollTab:CreateToolbar(parent)
         self:CreateStatControl(toolbar, cfg.key, cfg.name, cfg.color, cfg.pos)
     end
     
+    -- เส้นขีดคั่น
     self.UIFactory.CreateLabel({
         Parent = toolbar,
         Text = "|",
@@ -149,12 +150,12 @@ function ScrollTab:CreateToolbar(parent)
         TextXAlign = Enum.TextXAlignment.Center
     })
 
-    -- 2. ส่วนแสดงจำนวน Scroll (ขยับมาชิดปุ่ม - ของ XP)
+    -- 2. ส่วนแสดงจำนวน Scroll (ขยับหลังเส้นขีด)
     self.ScrollCounter = self.UIFactory.CreateLabel({
         Parent = toolbar,
         Text = "0 Scrolls",
-        Size = UDim2.new(1, -289, 0, 16), -- แก้ -300 เป็น -289
-        Position = UDim2.new(0, 289, 0, 2), -- แก้ 294 เป็น 289 (เว้น 6px จากปุ่ม)
+        Size = UDim2.new(1, -296, 0, 16), -- แก้เป็น -296
+        Position = UDim2.new(0, 296, 0, 2), -- แก้เป็น 296 (หลังเส้นขีด + spacing 2px)
         TextColor = THEME.TextWhite,
         TextSize = 10,
         Font = Enum.Font.GothamBold,
@@ -165,8 +166,8 @@ function ScrollTab:CreateToolbar(parent)
     self.SelectedCounter = self.UIFactory.CreateLabel({
         Parent = toolbar,
         Text = "0 Selected",
-        Size = UDim2.new(1, -289, 0, 14), -- แก้ -300 เป็น -289
-        Position = UDim2.new(0, 289, 0, 14), -- แก้ 294 เป็น 289
+        Size = UDim2.new(1, -296, 0, 14), -- แก้เป็น -296
+        Position = UDim2.new(0, 296, 0, 14), -- แก้เป็น 296
         TextColor = THEME.AccentBlue,
         TextSize = 9,
         Font = Enum.Font.Gotham,
