@@ -116,43 +116,52 @@ end
 function ScrollTab:CreateToolbar(parent)
     local THEME = self.Config.THEME
     
-    -- [แก้ตำแหน่ง] ย้าย Toolbar มาต่อท้ายชื่อ (ชิดซ้าย)
+    -- [แก้ layout] สร้างกรอบใหญ่ "ชิดขวา" (กว้าง 420px) เพื่อรวมทุกอย่างไว้ด้วยกัน
     local toolbar = self.UIFactory.CreateFrame({
         Parent = parent,
-        Size = UDim2.new(0, 300, 0, 28), 
-        Position = UDim2.new(0, 160, 0, 0), -- ชิดซ้าย ระยะห่าง 160 จากขอบ
+        Size = UDim2.new(0, 420, 0, 30), 
+        Position = UDim2.new(1, -428, 0, 8), -- ชิดขวา (1, -width)
         BgColor = THEME.CardBg,
         Corner = true,
         Stroke = true
     })
     
+    -- จัดเรียงปุ่ม Target (DMG, HP, XP) ให้อยู่ทางซ้ายของกรอบนี้
     local statConfigs = {
-        {key = "Damage", name = "DMG", color = THEME.Fail, pos = 6},
-        {key = "MaxHealth", name = "HP", color = THEME.Success, pos = 104},
-        {key = "Exp", name = "XP", color = THEME.Warning, pos = 202}
+        {key = "Damage", name = "DMG", color = THEME.Fail, pos = 10},
+        {key = "MaxHealth", name = "HP", color = THEME.Success, pos = 115},
+        {key = "Exp", name = "XP", color = THEME.Warning, pos = 220}
     }
     
     for _, cfg in ipairs(statConfigs) do
         self:CreateStatControl(toolbar, cfg.key, cfg.name, cfg.color, cfg.pos)
     end
     
-    -- [แก้สี] จำนวน Scrolls เปลี่ยนเป็น AccentBlue
+    -- เส้นคั่นแนวตั้ง (ให้ดูแบ่งโซนชัดเจน)
+    local div = Instance.new("Frame", toolbar)
+    div.Size = UDim2.new(0, 1, 0, 20)
+    div.Position = UDim2.new(0, 325, 0, 5)
+    div.BackgroundColor3 = THEME.GlassStroke or Color3.fromRGB(255, 255, 255)
+    div.BackgroundTransparency = 0.8
+    div.BorderSizePixel = 0
+    
+    -- [รวมเป็นหนึ่งเดียว] ย้าย Scroll Text เข้ามาอยู่ใน toolbar
     self.ScrollCounter = self.UIFactory.CreateLabel({
-        Parent = parent,
+        Parent = toolbar, -- ใส่ในกรอบเดียวกัน
         Text = "0 Scrolls",
         Size = UDim2.new(0, 80, 0, 16),
-        Position = UDim2.new(1, -88, 0, 6),
-        TextColor = THEME.AccentBlue, -- << เปลี่ยนจาก THEME.Success เป็น AccentBlue
+        Position = UDim2.new(1, -88, 0, 2),
+        TextColor = THEME.AccentBlue, -- สีฟ้าตามขอ
         TextSize = 10,
         Font = Enum.Font.GothamBold,
         TextXAlign = Enum.TextXAlignment.Right
     })
     
     self.SelectedCounter = self.UIFactory.CreateLabel({
-        Parent = parent,
+        Parent = toolbar, -- ใส่ในกรอบเดียวกัน
         Text = "0 Selected",
         Size = UDim2.new(0, 80, 0, 14),
-        Position = UDim2.new(1, -88, 0, 22),
+        Position = UDim2.new(1, -88, 0, 14),
         TextColor = THEME.Warning,
         TextSize = 9,
         Font = Enum.Font.Gotham,
@@ -167,7 +176,7 @@ function ScrollTab:CreateStatControl(parent, statKey, displayName, color, xPos)
         Parent = parent,
         Text = displayName,
         Size = UDim2.new(0, 25, 0, 16),
-        Position = UDim2.new(0, xPos, 0, 6),
+        Position = UDim2.new(0, xPos, 0, 7),
         TextColor = color,
         TextSize = 9,
         Font = Enum.Font.GothamBold,
@@ -176,7 +185,7 @@ function ScrollTab:CreateStatControl(parent, statKey, displayName, color, xPos)
     
     local valueBox = Instance.new("TextBox", parent)
     valueBox.Size = UDim2.new(0, 30, 0, 16)
-    valueBox.Position = UDim2.new(0, xPos + 26, 0, 6)
+    valueBox.Position = UDim2.new(0, xPos + 26, 0, 7)
     valueBox.BackgroundColor3 = THEME.BtnDefault
     valueBox.Text = tostring(self.TargetSettings[statKey]) .. "%"
     valueBox.TextColor3 = THEME.TextWhite
@@ -197,13 +206,13 @@ function ScrollTab:CreateStatControl(parent, statKey, displayName, color, xPos)
         end
     end)
     
-    -- [แก้สี] ปุ่ม + เปลี่ยนเป็น AccentBlue
+    -- [แก้สี] ปุ่มบวกเป็นสีฟ้า (AccentBlue)
     local plusBtn = self.UIFactory.CreateButton({
         Parent = parent,
         Size = UDim2.new(0, 16, 0, 16),
-        Position = UDim2.new(0, xPos + 58, 0, 6),
+        Position = UDim2.new(0, xPos + 58, 0, 7),
         Text = "+",
-        BgColor = THEME.AccentBlue, -- << เปลี่ยนตรงนี้ (เดิมเป็นสีเขียว 50, 120, 50)
+        BgColor = THEME.AccentBlue, -- สีฟ้า
         TextSize = 10,
         Font = Enum.Font.GothamBold,
         OnClick = function()
@@ -218,9 +227,9 @@ function ScrollTab:CreateStatControl(parent, statKey, displayName, color, xPos)
     local minusBtn = self.UIFactory.CreateButton({
         Parent = parent,
         Size = UDim2.new(0, 16, 0, 16),
-        Position = UDim2.new(0, xPos + 76, 0, 6),
+        Position = UDim2.new(0, xPos + 76, 0, 7),
         Text = "-",
-        BgColor = Color3.fromRGB(120, 50, 50), -- สีแดงคงเดิม
+        BgColor = Color3.fromRGB(120, 50, 50),
         TextSize = 10,
         Font = Enum.Font.GothamBold,
         OnClick = function()
