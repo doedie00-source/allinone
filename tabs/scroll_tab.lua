@@ -1,19 +1,17 @@
 -- tabs/scroll_tab.lua
--- Dark Scroll Auto Forge Tab (Redesigned - Professional Style)
+-- Dark Scroll Auto Forge Tab (Fixed - Complete)
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
--- Load Info Modules
 local function SafeRequire(path)
     local success, result = pcall(function() return require(path) end)
     return success and result or {}
 end
 
 local AccessoryInfo = SafeRequire(ReplicatedStorage.GameInfo.AccessoryInfo)
-local ItemsInfo = SafeRequire(ReplicatedStorage.GameInfo.ItemsInfo)
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local ReplicaController = Knit.GetController("ReplicaListener")
@@ -43,7 +41,6 @@ function ScrollTab.new(deps)
     self.NeedsUpdate = false
     self.LockOverlay = nil
     
-    -- Target Settings (Compact)
     self.TargetSettings = {
         Damage = 35,
         MaxHealth = 35,
@@ -59,7 +56,7 @@ end
 function ScrollTab:Init(parent)
     local THEME = self.Config.THEME
     
-    -- Header (Compact)
+    -- Header
     local header = Instance.new("Frame", parent)
     header.Name = "Header"
     header.Size = UDim2.new(1, 0, 0, 48)
@@ -87,10 +84,10 @@ function ScrollTab:Init(parent)
         TextXAlign = Enum.TextXAlignment.Left
     })
     
-    -- Target Settings Toolbar (Top Right)
-    self:CreateToolbarSettings(header)
+    -- Toolbar Settings
+    self:CreateToolbar(header)
     
-    -- Accessory List (Grid Layout like inventory_tab)
+    -- Accessory List
     self.AccessoryList = self.UIFactory.CreateScrollingFrame({
         Parent = parent,
         Size = UDim2.new(1, 0, 1, -52),
@@ -102,7 +99,7 @@ function ScrollTab:Init(parent)
     padding.PaddingTop = UDim.new(0, 8)
     padding.PaddingLeft = UDim.new(0, 4)
     padding.PaddingRight = UDim.new(0, 4)
-    padding.PaddingBottom = UDim.new(0, 75) -- เผื่อปุ่มด้านล่าง
+    padding.PaddingBottom = UDim.new(0, 75)
     
     local layout = self.AccessoryList:FindFirstChild("UIGridLayout")
     if layout then
@@ -110,86 +107,94 @@ function ScrollTab:Init(parent)
         layout.CellPadding = UDim2.new(0, 8, 0, 8)
     end
     
-    -- Floating Buttons
     self:CreateFloatingButtons(parent)
-    
-    -- Lock Overlay
     self:CreateLockOverlay(parent)
-    
-    -- Start monitoring
     self:StartMonitoring()
     self:RefreshAccessoryList()
 end
 
-function ScrollTab:CreateCompactSettings(parent)
+function ScrollTab:CreateToolbar(parent)
     local THEME = self.Config.THEME
     
-    -- Settings Container (Compact)
-    local panel = self.UIFactory.CreateFrame({
+    -- Toolbar Container
+    local toolbar = self.UIFactory.CreateFrame({
         Parent = parent,
-        Size = UDim2.new(1, 0, 0, 60),
-        Position = UDim2.new(0, 0, 0, 48),
+        Size = UDim2.new(0, 480, 0, 32),
+        Position = UDim2.new(1, -488, 0, 8),
         BgColor = THEME.CardBg,
         Corner = true,
         Stroke = true
     })
     
     self.UIFactory.CreateLabel({
-        Parent = panel,
-        Text = "  TARGET SETTINGS (Max 40%)",
-        Size = UDim2.new(1, -20, 0, 18),
-        Position = UDim2.new(0, 10, 0, 4),
-        TextColor = THEME.TextWhite,
-        TextSize = 10,
+        Parent = toolbar,
+        Text = "TARGET:",
+        Size = UDim2.new(0, 55, 0, 20),
+        Position = UDim2.new(0, 8, 0, 6),
+        TextColor = THEME.TextGray,
+        TextSize = 9,
         Font = Enum.Font.GothamBold,
         TextXAlign = Enum.TextXAlignment.Left
     })
     
-    -- Stats in one row
     local statConfigs = {
-        {key = "Damage", name = "DMG", color = THEME.Fail, pos = 10},
-        {key = "MaxHealth", name = "HP", color = THEME.Success, pos = 205},
-        {key = "Exp", name = "XP", color = THEME.Warning, pos = 400}
+        {key = "Damage", name = "DMG", color = THEME.Fail, pos = 60},
+        {key = "MaxHealth", name = "HP", color = THEME.Success, pos = 200},
+        {key = "Exp", name = "XP", color = THEME.Warning, pos = 340}
     }
     
     for _, cfg in ipairs(statConfigs) do
-        self:CreateCompactStatControl(panel, cfg.key, cfg.name, cfg.color, cfg.pos)
+        self:CreateStatControl(toolbar, cfg.key, cfg.name, cfg.color, cfg.pos)
     end
-end
-
-function ScrollTab:CreateCompactStatControl(parent, statKey, displayName, color, xPos)
-    local THEME = self.Config.THEME
     
-    local container = self.UIFactory.CreateFrame({
+    self.ScrollCounter = self.UIFactory.CreateLabel({
         Parent = parent,
-        Size = UDim2.new(0, 180, 0, 32),
-        Position = UDim2.new(0, xPos, 0, 26),
-        BgColor = THEME.GlassBg,
-        Corner = true
+        Text = "0 Scrolls",
+        Size = UDim2.new(0, 80, 0, 16),
+        Position = UDim2.new(1, -88, 0, 0),
+        TextColor = THEME.Success,
+        TextSize = 10,
+        Font = Enum.Font.GothamBold,
+        TextXAlign = Enum.TextXAlignment.Right
     })
     
+    self.SelectedCounter = self.UIFactory.CreateLabel({
+        Parent = parent,
+        Text = "0 Selected",
+        Size = UDim2.new(0, 80, 0, 14),
+        Position = UDim2.new(1, -88, 0, 16),
+        TextColor = THEME.Warning,
+        TextSize = 9,
+        Font = Enum.Font.Gotham,
+        TextXAlign = Enum.TextXAlignment.Right
+    })
+end
+
+function ScrollTab:CreateStatControl(parent, statKey, displayName, color, xPos)
+    local THEME = self.Config.THEME
+    
     self.UIFactory.CreateLabel({
-        Parent = container,
+        Parent = parent,
         Text = displayName,
-        Size = UDim2.new(0, 35, 0, 18),
-        Position = UDim2.new(0, 6, 0, 7),
+        Size = UDim2.new(0, 28, 0, 16),
+        Position = UDim2.new(0, xPos, 0, 8),
         TextColor = color,
-        TextSize = 10,
+        TextSize = 9,
         Font = Enum.Font.GothamBold,
         TextXAlign = Enum.TextXAlignment.Left
     })
     
-    local valueBox = Instance.new("TextBox", container)
-    valueBox.Size = UDim2.new(0, 55, 0, 22)
-    valueBox.Position = UDim2.new(0, 45, 0, 5)
+    local valueBox = Instance.new("TextBox", parent)
+    valueBox.Size = UDim2.new(0, 38, 0, 18)
+    valueBox.Position = UDim2.new(0, xPos + 30, 0, 7)
     valueBox.BackgroundColor3 = THEME.BtnDefault
     valueBox.Text = tostring(self.TargetSettings[statKey]) .. "%"
     valueBox.TextColor3 = THEME.TextWhite
-    valueBox.TextSize = 11
+    valueBox.TextSize = 9
     valueBox.Font = Enum.Font.GothamBold
     valueBox.TextXAlignment = Enum.TextXAlignment.Center
     valueBox.BorderSizePixel = 0
-    self.UIFactory.AddCorner(valueBox, 6)
+    self.UIFactory.AddCorner(valueBox, 4)
     
     valueBox.FocusLost:Connect(function()
         local num = tonumber(valueBox.Text:gsub("%%", ""))
@@ -203,12 +208,12 @@ function ScrollTab:CreateCompactStatControl(parent, statKey, displayName, color,
     end)
     
     local plusBtn = self.UIFactory.CreateButton({
-        Parent = container,
-        Size = UDim2.new(0, 26, 0, 22),
-        Position = UDim2.new(0, 105, 0, 5),
+        Parent = parent,
+        Size = UDim2.new(0, 18, 0, 18),
+        Position = UDim2.new(0, xPos + 72, 0, 7),
         Text = "+",
         BgColor = Color3.fromRGB(50, 120, 50),
-        TextSize = 13,
+        TextSize = 11,
         Font = Enum.Font.GothamBold,
         OnClick = function()
             if self.TargetSettings[statKey] < 40 then
@@ -220,12 +225,12 @@ function ScrollTab:CreateCompactStatControl(parent, statKey, displayName, color,
     })
     
     local minusBtn = self.UIFactory.CreateButton({
-        Parent = container,
-        Size = UDim2.new(0, 26, 0, 22),
-        Position = UDim2.new(0, 135, 0, 5),
+        Parent = parent,
+        Size = UDim2.new(0, 18, 0, 18),
+        Position = UDim2.new(0, xPos + 94, 0, 7),
         Text = "-",
         BgColor = Color3.fromRGB(120, 50, 50),
-        TextSize = 13,
+        TextSize = 11,
         Font = Enum.Font.GothamBold,
         OnClick = function()
             if self.TargetSettings[statKey] > 0 then
@@ -245,7 +250,6 @@ function ScrollTab:CreateFloatingButtons(parent)
     local btnHeight = 32
     local startX = -8
     
-    -- 1. Select All Button
     self.SelectAllBtn = self.UIFactory.CreateButton({
         Size = UDim2.new(0, btnWidth, 0, btnHeight),
         Position = UDim2.new(1, startX - btnWidth, 1, -38),
@@ -260,7 +264,6 @@ function ScrollTab:CreateFloatingButtons(parent)
     self.SelectAllBtn.ZIndex = 101
     self.SelectAllBtnStroke = self.UIFactory.AddStroke(self.SelectAllBtn, THEME.AccentBlue, 1.5, 0.4)
     
-    -- 2. Start/Stop Forge Button
     self.StartBtn = self.UIFactory.CreateButton({
         Size = UDim2.new(0, btnWidth + 10, 0, btnHeight),
         Position = UDim2.new(1, startX - btnWidth*2 - spacing - 10, 1, -38),
@@ -317,7 +320,7 @@ function ScrollTab:StartForge()
     
     local scrolls = replica.Data.ItemsService.Inventory.Scrolls["5"] or 0
     if scrolls <= 0 then
-        self.StateManager:SetStatus("No Dark Scrolls available!", THEME.Fail, self.StatusLabel)
+        self.StateManager:SetStatus("No Dark Scrolls!", THEME.Fail, self.StatusLabel)
         return
     end
     
@@ -327,7 +330,7 @@ function ScrollTab:StartForge()
     end
     
     if #itemsToForge == 0 then
-        self.StateManager:SetStatus("Please select items to forge", THEME.Warning, self.StatusLabel)
+        self.StateManager:SetStatus("Select items first", THEME.Warning, self.StatusLabel)
         return
     end
     
@@ -336,13 +339,12 @@ function ScrollTab:StartForge()
     
     self.StartBtn.Text = "STOP FORGE"
     self.StartBtn.TextColor3 = THEME.TextWhite
-    self.StartBtn.BackgroundColor3 = THEME.CardBg
     self.StartBtnStroke.Color = THEME.Fail
     
     if self.LockOverlay then
         self.LockOverlay.Visible = true
         if self.LockLabel then
-            self.LockLabel.Text = "[STARTING]\nPreparing to forge..."
+            self.LockLabel.Text = "[STARTING]\nPreparing..."
         end
     end
     
@@ -380,7 +382,7 @@ function ScrollTab:ProcessForging(itemsToForge, replica)
         local attempts = 0
         while self.IsForging and not self:IsItemReachedTarget(info) do
             if (replica.Data.ItemsService.Inventory.Scrolls["5"] or 0) <= 0 then
-                self.StateManager:SetStatus("Out of Dark Scrolls!", THEME.Fail, self.StatusLabel)
+                self.StateManager:SetStatus("Out of Scrolls!", THEME.Fail, self.StatusLabel)
                 self.IsForging = false
                 break
             end
@@ -394,15 +396,8 @@ function ScrollTab:ProcessForging(itemsToForge, replica)
             
             if self.LockLabel then
                 self.LockLabel.Text = string.format(
-                    "[FORGING] %s\n\n" ..
-                    "Item: %d / %d\n" ..
-                    "Total Forges: %d\n" ..
-                    "Attempts: %d",
-                    info.Name,
-                    i,
-                    #itemsToForge,
-                    totalForged,
-                    attempts
+                    "[FORGING] %s\n\nItem: %d / %d\nTotal: %d\nAttempts: %d",
+                    info.Name, i, #itemsToForge, totalForged, attempts
                 )
             end
             
@@ -419,7 +414,7 @@ function ScrollTab:ProcessForging(itemsToForge, replica)
         if self:IsItemReachedTarget(info) then
             self.SelectedItems[guid] = nil
             self.StateManager:SetStatus(
-                string.format("%s complete! All stats reached target!", info.Name),
+                string.format("%s complete!", info.Name),
                 THEME.Success,
                 self.StatusLabel
             )
@@ -432,13 +427,13 @@ function ScrollTab:ProcessForging(itemsToForge, replica)
     
     if self.ShouldStop then
         self.StateManager:SetStatus(
-            string.format("Stopped! Total forges: %d", totalForged),
+            string.format("Stopped! Total: %d", totalForged),
             THEME.Warning,
             self.StatusLabel
         )
     else
         self.StateManager:SetStatus(
-            string.format("Complete! Total forges: %d", totalForged),
+            string.format("Complete! Total: %d", totalForged),
             THEME.Success,
             self.StatusLabel
         )
@@ -452,7 +447,6 @@ end
 function ScrollTab:StopForge()
     self.ShouldStop = true
     self.StartBtn.Text = "STOPPING..."
-    self.StartBtn.TextColor3 = self.Config.THEME.TextWhite
     self.StartBtnStroke.Color = self.Config.THEME.Fail
 end
 
@@ -464,7 +458,6 @@ function ScrollTab:ResetButton()
     
     self.StartBtn.Text = "START FORGE"
     self.StartBtn.TextColor3 = THEME.TextWhite
-    self.StartBtn.BackgroundColor3 = THEME.CardBg
     self.StartBtnStroke.Color = THEME.AccentBlue
     
     if self.LockOverlay then
@@ -526,11 +519,10 @@ function ScrollTab:CreateAccessoryCard(guid, info, baseData)
     local isCurrentForging = (self.CurrentForgingItem == guid)
     local isSelected = self.SelectedItems[guid]
     
-    -- ✅ Card พื้นฐานสีเดียวกัน ไม่ว่าจะ reach target หรือไม่
     local Card = self.UIFactory.CreateFrame({
         Parent = self.AccessoryList,
         Size = UDim2.new(0, 92, 0, 115),
-        BgColor = isCurrentForging and Color3.fromRGB(80, 50, 120) or THEME.CardBg, -- เอาสีเขียวออก
+        BgColor = isCurrentForging and Color3.fromRGB(80, 50, 120) or THEME.CardBg,
         Corner = true,
         Stroke = true,
         StrokeColor = isCurrentForging and Color3.fromRGB(255, 150, 255) or
@@ -538,7 +530,6 @@ function ScrollTab:CreateAccessoryCard(guid, info, baseData)
         StrokeThickness = isSelected and 2 or 1
     })
     
-    -- Icon
     local icon = Instance.new("ImageLabel", Card)
     icon.Size = UDim2.new(0, 50, 0, 50)
     icon.Position = UDim2.new(0.5, -25, 0, 6)
@@ -547,7 +538,6 @@ function ScrollTab:CreateAccessoryCard(guid, info, baseData)
     icon.BorderSizePixel = 0
     self.UIFactory.AddCorner(icon, 8)
     
-    -- ✅ Status Icon (Top Right) - แสดง checkmark เขียวเมื่อถึงเป้าหมาย
     if reachedTarget then
         self.UIFactory.CreateLabel({
             Parent = Card,
@@ -566,7 +556,6 @@ function ScrollTab:CreateAccessoryCard(guid, info, baseData)
         })
     end
     
-    -- Evolution Stars
     if info.Evolution and tonumber(info.Evolution) > 0 then
         local starContainer = Instance.new("Frame", Card)
         starContainer.Size = UDim2.new(1, 0, 0, 12)
@@ -587,7 +576,6 @@ function ScrollTab:CreateAccessoryCard(guid, info, baseData)
         end
     end
     
-    -- Name
     local nameLbl = self.UIFactory.CreateLabel({
         Parent = Card,
         Text = info.Name,
@@ -599,7 +587,6 @@ function ScrollTab:CreateAccessoryCard(guid, info, baseData)
     })
     nameLbl.TextWrapped = true
     
-    -- ✅ Stats Display (แสดงค่าพลัง DMG/HP/XP)
     if info.Scroll and info.Scroll.Upgrades then
         local statsContainer = Instance.new("Frame", Card)
         statsContainer.Size = UDim2.new(1, -8, 0, 24)
@@ -641,7 +628,6 @@ function ScrollTab:CreateAccessoryCard(guid, info, baseData)
             end
         end
     else
-        -- No Scroll
         self.UIFactory.CreateLabel({
             Parent = Card,
             Text = "NO SCROLL",
@@ -653,7 +639,6 @@ function ScrollTab:CreateAccessoryCard(guid, info, baseData)
         })
     end
     
-    -- Click Button
     local btn = Instance.new("TextButton", Card)
     btn.Size = UDim2.new(1, 0, 1, 0)
     btn.BackgroundTransparency = 1
