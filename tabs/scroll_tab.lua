@@ -126,7 +126,7 @@ function ScrollTab:CreateToolbar(parent)
         Stroke = true
     })
     
-    -- คำนวณตำแหน่ง Stat ต่างๆ (จบที่ประมาณ pixel ที่ 283)
+    -- คำนวณตำแหน่ง Stat ต่างๆ
     local statConfigs = {
         {key = "Damage", name = "DMG", color = THEME.TextWhite, pos = 6},
         {key = "MaxHealth", name = "HP", color = THEME.TextWhite, pos = 100},
@@ -136,28 +136,41 @@ function ScrollTab:CreateToolbar(parent)
     for _, cfg in ipairs(statConfigs) do
         self:CreateStatControl(toolbar, cfg.key, cfg.name, cfg.color, cfg.pos)
     end
-    -- 2. ส่วนแสดงจำนวน Scroll (เต็มพื้นที่ + ชิดขวา)
+    
+    self.UIFactory.CreateLabel({
+        Parent = toolbar,
+        Text = "|",
+        Size = UDim2.new(0, 8, 0, 20),
+        Position = UDim2.new(0, 286, 0, 5),
+        TextColor = THEME.GlassStroke or Color3.fromRGB(255, 255, 255),
+        TextTransparency = 0.6,
+        TextSize = 20,
+        Font = Enum.Font.Gotham,
+        TextXAlign = Enum.TextXAlignment.Center
+    })
+
+    -- 2. ส่วนแสดงจำนวน Scroll (ขยับมาชิดปุ่ม - ของ XP)
     self.ScrollCounter = self.UIFactory.CreateLabel({
         Parent = toolbar,
         Text = "0 Scrolls",
-        Size = UDim2.new(1, -300, 0, 16), -- เต็มพื้นที่จาก 300 → 360 (เว้นขอบขวา 6px)
-        Position = UDim2.new(0, 294, 0, 2),
+        Size = UDim2.new(1, -289, 0, 16), -- แก้ -300 เป็น -289
+        Position = UDim2.new(0, 289, 0, 2), -- แก้ 294 เป็น 289 (เว้น 6px จากปุ่ม)
         TextColor = THEME.TextWhite,
         TextSize = 10,
         Font = Enum.Font.GothamBold,
-        TextXAlign = Enum.TextXAlignment.Right -- ชิดขวา
+        TextXAlign = Enum.TextXAlignment.Right
     })
     
-    -- 3. ส่วนแสดง Selected (เต็มพื้นที่ + ชิดขวา)
+    -- 3. ส่วนแสดง Selected
     self.SelectedCounter = self.UIFactory.CreateLabel({
         Parent = toolbar,
         Text = "0 Selected",
-        Size = UDim2.new(1, -300, 0, 14), -- เต็มพื้นที่จาก 300 → 360 (เว้นขอบขวา 6px)
-        Position = UDim2.new(0, 294, 0, 14),
+        Size = UDim2.new(1, -289, 0, 14), -- แก้ -300 เป็น -289
+        Position = UDim2.new(0, 289, 0, 14), -- แก้ 294 เป็น 289
         TextColor = THEME.AccentBlue,
         TextSize = 9,
         Font = Enum.Font.Gotham,
-        TextXAlign = Enum.TextXAlignment.Right -- ชิดขวา
+        TextXAlign = Enum.TextXAlignment.Right
     })
 end
 
