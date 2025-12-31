@@ -1,0 +1,229 @@
+-- tabs/players_tab.lua
+-- Professional Players Tab (No Emojis, Clean Design)
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local PlayersTab = {}
+PlayersTab.__index = PlayersTab
+
+function PlayersTab.new(deps)
+    local self = setmetatable({}, PlayersTab)
+    
+    self.UIFactory = deps.UIFactory
+    self.StateManager = deps.StateManager
+    self.TradeManager = deps.TradeManager
+    self.Utils = deps.Utils
+    self.Config = deps.Config
+    self.StatusLabel = deps.StatusLabel
+    
+    self.Container = nil
+    self.PlayerButtons = {}
+    
+    return self
+end
+
+function PlayersTab:Init(parent)
+    local THEME = self.Config.THEME
+    
+    -- 1. สร้าง Header Container (เพื่อให้จัดปุ่มง่ายขึ้น)
+    local headerFrame = Instance.new("Frame", parent)
+    headerFrame.Name = "Header"
+    headerFrame.Size = UDim2.new(1, 0, 0, 42)
+    headerFrame.BackgroundTransparency = 1
+    
+    -- Title
+    self.UIFactory.CreateLabel({
+        Parent = headerFrame,
+        Text = "  SERVER PLAYERS",
+        Size = UDim2.new(1, -8, 0, 24),
+        Position = UDim2.new(0, 8, 0, 0),
+        TextColor = THEME.TextWhite,
+        TextSize = 14,
+        Font = Enum.Font.GothamBlack,
+        TextXAlign = Enum.TextXAlignment.Left
+    })
+    
+    -- Subtitle
+    self.UIFactory.CreateLabel({
+        Parent = headerFrame,
+        Text = "Force trade with any player in the server",
+        Size = UDim2.new(1, -8, 0, 14),
+        Position = UDim2.new(0, 8, 0, 22),
+        TextColor = THEME.TextDim,
+        TextSize = 10, -- ปรับให้เท่ากับหน้าอื่น
+        Font = Enum.Font.Gotham,
+        TextXAlign = Enum.TextXAlignment.Left
+    })
+    
+    -- ==========================================
+    -- ✅ เพิ่มปุ่ม Trade Control (Confirm/Cancel)
+    -- ==========================================
+    local ctrlContainer = Instance.new("Frame", headerFrame)
+    ctrlContainer.Size = UDim2.new(0, 200, 0, 32)
+    ctrlContainer.Position = UDim2.new(1, -8, 0, 2)
+    ctrlContainer.AnchorPoint = Vector2.new(1, 0)
+    ctrlContainer.BackgroundTransparency = 1
+    
+    local ctrlLayout = Instance.new("UIListLayout", ctrlContainer)
+    ctrlLayout.FillDirection = Enum.FillDirection.Horizontal
+    ctrlLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+    ctrlLayout.Padding = UDim.new(0, 8)
+
+    -- ปุ่ม Cancel
+    local btnCancel = self.UIFactory.CreateButton({
+        Parent = ctrlContainer,
+        Text = "CANCEL",
+        Size = UDim2.new(0, 80, 0, 28),
+        BgColor = THEME.CardBg,
+        TextColor = THEME.TextWhite,
+        TextSize = 11,
+        Font = Enum.Font.GothamBold,
+        CornerRadius = 6,
+        OnClick = function()
+            self.TradeManager.ActionCancelTrade(self.StatusLabel, self.StateManager, self.Utils)
+        end
+    })
+    self.UIFactory.AddStroke(btnCancel, THEME.Fail, 1.5, 0.4)
+
+
+    
+    -- Scrolling Frame (ปรับตำแหน่งลงมาเล็กน้อยให้พอดีกับ Header ใหม่)
+    self.Container = self.UIFactory.CreateScrollingFrame({
+        Parent = parent,
+        Size = UDim2.new(1, 0, 1, -48),
+        Position = UDim2.new(0, 0, 0, 48) -- ขยับลงมาที่ 48px
+    })
+    
+    self:RefreshList()
+end
+
+function PlayersTab:RefreshList()
+    local THEME = self.Config.THEME
+    
+    -- Clear existing
+    for _, child in pairs(self.Container:GetChildren()) do
+        if not child:IsA("UIListLayout") and not child:IsA("UIPadding") then
+            child:Destroy()
+        end
+    end
+    self.PlayerButtons = {}
+
+    local padding = self.Container:FindFirstChild("UIPadding") or Instance.new("UIPadding", self.Container)
+    padding.PaddingLeft = UDim.new(0, 8)
+    padding.PaddingRight = UDim.new(0, 8)
+    padding.PaddingTop = UDim.new(0, 4)
+    
+    local isTrading = self.Utils.IsTradeActive()
+    local count = 0
+    
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer then
+            -- Professional Card Design
+            local card = Instance.new("Frame", self.Container)
+            card.Name = plr.Name
+            card.Size = UDim2.new(1, -16, 0, 60)
+            card.BackgroundColor3 = THEME.CardBg
+            card.BackgroundTransparency = 0
+            card.BorderSizePixel = 0
+            
+            self.UIFactory.AddCorner(card, 8)
+            self.UIFactory.AddStroke(card, THEME.GlassStroke, 1.5, 0)
+            
+            -- Player Avatar
+            local avatar = Instance.new("ImageLabel", card)
+            avatar.Size = UDim2.new(0, 42, 0, 42)
+            avatar.Position = UDim2.new(0, 9, 0.5, -21)
+            avatar.BackgroundTransparency = 1
+            avatar.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. plr.UserId .. "&width=150&height=150&format=png"
+            self.UIFactory.AddCorner(avatar, 8)
+            
+            -- Player Info
+            local nameLabel = self.UIFactory.CreateLabel({
+                Parent = card,
+                Text = plr.DisplayName,
+                Size = UDim2.new(0, 300, 0, 18),
+                Position = UDim2.new(0, 58, 0, 12),
+                TextColor = THEME.TextWhite,
+                TextSize = 13,
+                Font = Enum.Font.GothamBold,
+                TextXAlign = Enum.TextXAlignment.Left
+            })
+            
+            local usernameLabel = self.UIFactory.CreateLabel({
+                Parent = card,
+                Text = "@" .. plr.Name,
+                Size = UDim2.new(0, 300, 0, 14),
+                Position = UDim2.new(0, 58, 0, 32),
+                TextColor = THEME.TextDim,
+                TextSize = 10,
+                Font = Enum.Font.Gotham,
+                TextXAlign = Enum.TextXAlignment.Left
+            })
+
+            -- Modern Trade Button
+            local tradeBtn = self.UIFactory.CreateButton({
+                Size = UDim2.new(0, 90, 0, 32),
+                Position = UDim2.new(1, -98, 0.5, -16),
+                Text = isTrading and "LOCKED" or "TRADE",
+                BgColor = isTrading and THEME.BtnDisabled or THEME.AccentBlue,
+                TextColor = isTrading and THEME.TextDisabled or THEME.TextWhite,
+                Font = Enum.Font.GothamBold,
+                TextSize = 11,
+                CornerRadius = 6,
+                Parent = card
+            })
+            tradeBtn.AutoButtonColor = not isTrading
+            
+            if not isTrading then
+                self.UIFactory.AddStroke(tradeBtn, THEME.GlassStroke, 1, 0.3)
+            end
+            
+            table.insert(self.PlayerButtons, tradeBtn)
+            tradeBtn:SetAttribute("OriginalColor", THEME.AccentBlue)
+            tradeBtn:SetAttribute("OriginalTextColor", THEME.TextWhite)
+            
+            -- Trade Button Click
+            tradeBtn.MouseButton1Click:Connect(function()
+                if self.Utils.IsTradeActive() then
+                    self.StateManager:SetStatus("TRADE IS ACTIVE - FINISH IT FIRST", THEME.Fail, self.StatusLabel)
+                    return
+                end
+
+                self.TradeManager.ForceTradeWith(plr, self.StatusLabel, self.StateManager, self.Utils)
+                
+            end)
+            
+            count = count + 1
+        end 
+    end
+    
+    self.Container.CanvasSize = UDim2.new(0, 0, 0, count * 64)
+end
+
+function PlayersTab:UpdateButtonStates()
+    local THEME = self.Config.THEME
+    local tradeActive = self.Utils.IsTradeActive()
+    
+    for _, btn in pairs(self.PlayerButtons) do
+        if btn and btn.Parent then
+            if tradeActive then
+                btn.BackgroundColor3 = THEME.BtnDisabled
+                btn.TextColor3 = THEME.TextDisabled
+                btn.Text = "LOCKED"
+                btn.AutoButtonColor = false
+            else
+                if btn:GetAttribute("OriginalColor") then
+                    btn.BackgroundColor3 = btn:GetAttribute("OriginalColor")
+                end
+                if btn:GetAttribute("OriginalTextColor") then
+                    btn.TextColor3 = btn:GetAttribute("OriginalTextColor")
+                end
+                btn.Text = "TRADE"
+                btn.AutoButtonColor = true
+            end
+        end
+    end
+end
+
+return PlayersTab
