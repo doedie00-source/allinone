@@ -127,22 +127,27 @@ function ScrollTab:CreateToolbar(parent)
     
     -- คำนวณตำแหน่งใหม่ (แต่ละชุด 86px + เว้น 8px = 94px)
     local statConfigs = {
-        {key = "Damage", name = "DMG", color = THEME.Fail, pos = 6},
-        {key = "MaxHealth", name = "HP", color = THEME.Success, pos = 100},  -- 6 + 94
-        {key = "Exp", name = "XP", color = THEME.Warning, pos = 194}         -- 100 + 94
+        {key = "Damage", name = "DMG", color = THEME.TextWhite, pos = 6},
+        {key = "MaxHealth", name = "HP", color = THEME.TextWhite, pos = 100},  -- 6 + 94
+        {key = "Exp", name = "XP", color = THEME.TextWhite, pos = 194}         -- 100 + 94
     }
     
     for _, cfg in ipairs(statConfigs) do
         self:CreateStatControl(toolbar, cfg.key, cfg.name, cfg.color, cfg.pos)
     end
     
-    -- เส้นคั่นแนวตั้ง (ขยับไปที่ 286px)
-    local div = Instance.new("Frame", toolbar)
-    div.Size = UDim2.new(0, 1, 0, 18)
-    div.Position = UDim2.new(0, 286, 0, 6)
-    div.BackgroundColor3 = THEME.GlassStroke or Color3.fromRGB(255, 255, 255)
-    div.BackgroundTransparency = 0.8
-    div.BorderSizePixel = 0
+    -- [แก้ไข] เปลี่ยนสี่เหลี่ยมทึบ เป็นตัวอักษร "|" บางๆ
+    self.UIFactory.CreateLabel({
+        Parent = toolbar,
+        Text = "|",
+        Size = UDim2.new(0, 10, 0, 20),
+        Position = UDim2.new(0, 284, 0, 5), -- ขยับตำแหน่งนิดหน่อยให้พอดี
+        TextColor = THEME.GlassStroke or Color3.fromRGB(255, 255, 255),
+        TextTransparency = 0.6,             -- ปรับความจาง (0.6 คือจางๆ)
+        TextSize = 12,                      -- ขนาดตัวอักษรเล็กๆ
+        Font = Enum.Font.Gotham,
+        TextXAlign = Enum.TextXAlignment.Center
+    })
     
     -- ส่วนแสดงจำนวน Scroll
     self.ScrollCounter = self.UIFactory.CreateLabel({
