@@ -47,7 +47,7 @@ local PlayersTab = loadModule(MODULES.players_tab, "players_tab")
 local DupeTab = loadModule(MODULES.dupe_tab, "dupe_tab")
 local InventoryTab = loadModule(MODULES.inventory_tab, "inventory_tab")
 local AutoCratesTab = loadModule(MODULES.auto_crates_tab, "auto_crates_tab")
-local ScrollTab = loadModule(MODULES.scroll_tab, "scroll_tab") -- ✅ เพิ่มบรรทัดนี้
+local ScrollTab = loadModule(MODULES.scroll_tab, "scroll_tab")
 
 if not (Config and Utils and UIFactory and StateManager and InventoryManager and TradeManager and GUI) then
     error("❌ Critical module failed to load.")
