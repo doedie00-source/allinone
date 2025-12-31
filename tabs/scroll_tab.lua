@@ -115,7 +115,7 @@ end
 function ScrollTab:CreateToolbar(parent)
     local THEME = self.Config.THEME
     
-    -- กรอบหลัก (เพิ่มขนาดเป็น 360px)
+    -- กรอบหลัก (Size 360px)
     local toolbar = self.UIFactory.CreateFrame({
         Parent = parent,
         Size = UDim2.new(0, 360, 0, 30), 
@@ -125,51 +125,52 @@ function ScrollTab:CreateToolbar(parent)
         Stroke = true
     })
     
-    -- คำนวณตำแหน่งใหม่ (แต่ละชุด 86px + เว้น 8px = 94px)
+    -- คำนวณตำแหน่ง Stat ต่างๆ (จบที่ประมาณ pixel ที่ 283)
     local statConfigs = {
         {key = "Damage", name = "DMG", color = THEME.TextWhite, pos = 6},
-        {key = "MaxHealth", name = "HP", color = THEME.TextWhite, pos = 100},  -- 6 + 94
-        {key = "Exp", name = "XP", color = THEME.TextWhite, pos = 194}         -- 100 + 94
+        {key = "MaxHealth", name = "HP", color = THEME.TextWhite, pos = 100},
+        {key = "Exp", name = "XP", color = THEME.TextWhite, pos = 194}
     }
     
     for _, cfg in ipairs(statConfigs) do
         self:CreateStatControl(toolbar, cfg.key, cfg.name, cfg.color, cfg.pos)
     end
     
-    -- [แก้ไข] เปลี่ยนสี่เหลี่ยมทึบ เป็นตัวอักษร "|" บางๆ
+    -- 1. เส้นขีดคั่น (ขยับมาที่ 284 ให้ชิดปุ่ม XP มากขึ้น)
     self.UIFactory.CreateLabel({
         Parent = toolbar,
         Text = "|",
         Size = UDim2.new(0, 10, 0, 20),
-        Position = UDim2.new(0, 284, 0, 5), -- ขยับตำแหน่งนิดหน่อยให้พอดี
+        Position = UDim2.new(0, 284, 0, 5), 
         TextColor = THEME.GlassStroke or Color3.fromRGB(255, 255, 255),
-        TextTransparency = 0.6,             -- ปรับความจาง (0.6 คือจางๆ)
-        TextSize = 12,                      -- ขนาดตัวอักษรเล็กๆ
+        TextTransparency = 0.6,
+        TextSize = 12,
         Font = Enum.Font.Gotham,
         TextXAlign = Enum.TextXAlignment.Center
     })
     
-    -- ส่วนแสดงจำนวน Scroll
+    -- 2. ส่วนแสดงจำนวน Scroll (แก้ให้ชิดซ้าย และขยับมาติดเส้นขีดที่ 294)
     self.ScrollCounter = self.UIFactory.CreateLabel({
         Parent = toolbar,
         Text = "0 Scrolls",
-        Size = UDim2.new(0, 65, 0, 16),
-        Position = UDim2.new(1, -68, 0, 2),
-        TextColor = THEME.AccentBlue,
+        Size = UDim2.new(0, 60, 0, 16),
+        Position = UDim2.new(0, 294, 0, 2), -- ใช้ตำแหน่ง Fix จากซ้ายเลย จะได้ไม่ห่าง
+        TextColor = THEME.TextWhite,
         TextSize = 10,
         Font = Enum.Font.GothamBold,
-        TextXAlign = Enum.TextXAlignment.Right
+        TextXAlign = Enum.TextXAlignment.Left -- [สำคัญ] เปลี่ยนเป็นชิดซ้าย
     })
     
+    -- 3. ส่วนแสดง Selected (แก้ให้ชิดซ้ายเหมือนกัน)
     self.SelectedCounter = self.UIFactory.CreateLabel({
         Parent = toolbar,
         Text = "0 Selected",
-        Size = UDim2.new(0, 65, 0, 14),
-        Position = UDim2.new(1, -68, 0, 14),
-        TextColor = THEME.Warning,
+        Size = UDim2.new(0, 60, 0, 14),
+        Position = UDim2.new(0, 294, 0, 14),
+        TextColor = THEME.AccentBlue,
         TextSize = 9,
         Font = Enum.Font.Gotham,
-        TextXAlign = Enum.TextXAlignment.Right
+        TextXAlign = Enum.TextXAlignment.Left -- [สำคัญ] เปลี่ยนเป็นชิดซ้าย
     })
 end
 
