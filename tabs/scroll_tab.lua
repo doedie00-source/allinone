@@ -149,31 +149,30 @@ function ScrollTab:CreateToolbar(parent)
         Font = Enum.Font.Gotham,
         TextXAlign = Enum.TextXAlignment.Center
     })
-    
-    -- 2. ส่วนแสดงจำนวน Scroll (เต็มพื้นที่ + ชิดขวา)
+
+    -- 2. ส่วนแสดงจำนวน Scroll (ขยับมาชิดเส้นขีด)
     self.ScrollCounter = self.UIFactory.CreateLabel({
         Parent = toolbar,
         Text = "0 Scrolls",
-        Size = UDim2.new(1, -300, 0, 16), -- เต็มพื้นที่จาก 300 → 360 (เว้นขอบขวา 6px)
-        Position = UDim2.new(0, 294, 0, 2),
+        Size = UDim2.new(1, -292, 0, 16), -- แก้ -300 เป็น -292
+        Position = UDim2.new(0, 292, 0, 2), -- แก้ 294 เป็น 292 (ชิดเส้นขีดมากขึ้น)
         TextColor = THEME.TextWhite,
         TextSize = 10,
         Font = Enum.Font.GothamBold,
-        TextXAlign = Enum.TextXAlignment.Right -- ชิดขวา
+        TextXAlign = Enum.TextXAlignment.Right
     })
-    
-    -- 3. ส่วนแสดง Selected (เต็มพื้นที่ + ชิดขวา)
+
+    -- 3. ส่วนแสดง Selected (ขยับมาชิดเหมือนกัน)
     self.SelectedCounter = self.UIFactory.CreateLabel({
         Parent = toolbar,
         Text = "0 Selected",
-        Size = UDim2.new(1, -300, 0, 14), -- เต็มพื้นที่จาก 300 → 360 (เว้นขอบขวา 6px)
-        Position = UDim2.new(0, 294, 0, 14),
+        Size = UDim2.new(1, -292, 0, 14), -- แก้ -300 เป็น -292
+        Position = UDim2.new(0, 292, 0, 14), -- แก้ 294 เป็น 292
         TextColor = THEME.AccentBlue,
         TextSize = 9,
         Font = Enum.Font.Gotham,
-        TextXAlign = Enum.TextXAlignment.Right -- ชิดขวา
+        TextXAlign = Enum.TextXAlignment.Right
     })
-end
 
 function ScrollTab:CreateStatControl(parent, statKey, displayName, color, xPos)
     local THEME = self.Config.THEME
