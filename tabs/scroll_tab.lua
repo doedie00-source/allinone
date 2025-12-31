@@ -173,6 +173,7 @@ function ScrollTab:CreateToolbar(parent)
         Font = Enum.Font.Gotham,
         TextXAlign = Enum.TextXAlignment.Right
     })
+end    
 
 function ScrollTab:CreateStatControl(parent, statKey, displayName, color, xPos)
     local THEME = self.Config.THEME
