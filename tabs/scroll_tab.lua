@@ -1,5 +1,5 @@
 -- tabs/scroll_tab.lua
--- Dark Scroll Auto Forge Tab (Fixed - Complete)
+-- Dark Scroll Auto Forge Tab (Fixed UI & Nil Error)
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -116,11 +116,11 @@ end
 function ScrollTab:CreateToolbar(parent)
     local THEME = self.Config.THEME
     
-    -- Toolbar Container
+    -- [แก้ไข UI] ปรับขนาด Toolbar ให้เล็กลง (360px) และขยับ Position
     local toolbar = self.UIFactory.CreateFrame({
         Parent = parent,
-        Size = UDim2.new(0, 480, 0, 32),
-        Position = UDim2.new(1, -488, 0, 8),
+        Size = UDim2.new(0, 360, 0, 30), -- ลดความกว้างลงจาก 480 เหลือ 360
+        Position = UDim2.new(1, -370, 0, 8), -- ขยับตำแหน่งให้สมดุล
         BgColor = THEME.CardBg,
         Corner = true,
         Stroke = true
@@ -129,18 +129,19 @@ function ScrollTab:CreateToolbar(parent)
     self.UIFactory.CreateLabel({
         Parent = toolbar,
         Text = "TARGET:",
-        Size = UDim2.new(0, 55, 0, 20),
-        Position = UDim2.new(0, 8, 0, 6),
+        Size = UDim2.new(0, 45, 0, 20),
+        Position = UDim2.new(0, 6, 0, 5),
         TextColor = THEME.TextGray,
         TextSize = 9,
         Font = Enum.Font.GothamBold,
         TextXAlign = Enum.TextXAlignment.Left
     })
     
+    -- [แก้ไข UI] ปรับระยะห่างของแต่ละ Stat ให้ชิดกันมากขึ้น
     local statConfigs = {
-        {key = "Damage", name = "DMG", color = THEME.Fail, pos = 60},
-        {key = "MaxHealth", name = "HP", color = THEME.Success, pos = 200},
-        {key = "Exp", name = "XP", color = THEME.Warning, pos = 340}
+        {key = "Damage", name = "DMG", color = THEME.Fail, pos = 50},   -- เดิม 60
+        {key = "MaxHealth", name = "HP", color = THEME.Success, pos = 150}, -- เดิม 200
+        {key = "Exp", name = "XP", color = THEME.Warning, pos = 250}    -- เดิม 340
     }
     
     for _, cfg in ipairs(statConfigs) do
@@ -176,8 +177,8 @@ function ScrollTab:CreateStatControl(parent, statKey, displayName, color, xPos)
     self.UIFactory.CreateLabel({
         Parent = parent,
         Text = displayName,
-        Size = UDim2.new(0, 28, 0, 16),
-        Position = UDim2.new(0, xPos, 0, 8),
+        Size = UDim2.new(0, 25, 0, 16),
+        Position = UDim2.new(0, xPos, 0, 7),
         TextColor = color,
         TextSize = 9,
         Font = Enum.Font.GothamBold,
@@ -185,8 +186,8 @@ function ScrollTab:CreateStatControl(parent, statKey, displayName, color, xPos)
     })
     
     local valueBox = Instance.new("TextBox", parent)
-    valueBox.Size = UDim2.new(0, 38, 0, 18)
-    valueBox.Position = UDim2.new(0, xPos + 30, 0, 7)
+    valueBox.Size = UDim2.new(0, 32, 0, 18) -- ลดขนาดกล่องนิดหน่อย
+    valueBox.Position = UDim2.new(0, xPos + 25, 0, 6)
     valueBox.BackgroundColor3 = THEME.BtnDefault
     valueBox.Text = tostring(self.TargetSettings[statKey]) .. "%"
     valueBox.TextColor3 = THEME.TextWhite
@@ -209,11 +210,11 @@ function ScrollTab:CreateStatControl(parent, statKey, displayName, color, xPos)
     
     local plusBtn = self.UIFactory.CreateButton({
         Parent = parent,
-        Size = UDim2.new(0, 18, 0, 18),
-        Position = UDim2.new(0, xPos + 72, 0, 7),
+        Size = UDim2.new(0, 16, 0, 18), -- ลดขนาดปุ่ม
+        Position = UDim2.new(0, xPos + 60, 0, 6), -- ขยับให้ชิดขึ้น
         Text = "+",
         BgColor = Color3.fromRGB(50, 120, 50),
-        TextSize = 11,
+        TextSize = 10,
         Font = Enum.Font.GothamBold,
         OnClick = function()
             if self.TargetSettings[statKey] < 40 then
@@ -226,11 +227,11 @@ function ScrollTab:CreateStatControl(parent, statKey, displayName, color, xPos)
     
     local minusBtn = self.UIFactory.CreateButton({
         Parent = parent,
-        Size = UDim2.new(0, 18, 0, 18),
-        Position = UDim2.new(0, xPos + 94, 0, 7),
+        Size = UDim2.new(0, 16, 0, 18), -- ลดขนาดปุ่ม
+        Position = UDim2.new(0, xPos + 78, 0, 6), -- ขยับให้ชิดขึ้น
         Text = "-",
         BgColor = Color3.fromRGB(120, 50, 50),
-        TextSize = 11,
+        TextSize = 10,
         Font = Enum.Font.GothamBold,
         OnClick = function()
             if self.TargetSettings[statKey] > 0 then
@@ -313,12 +314,16 @@ function ScrollTab:ToggleForge()
     end
 end
 
+-- [แก้ไข Error] เพิ่ม Safety Check สำหรับ Scrolls
 function ScrollTab:StartForge()
     local THEME = self.Config.THEME
     local replica = ReplicaController:GetReplica()
     if not replica or not replica.Data then return end
     
-    local scrolls = replica.Data.ItemsService.Inventory.Scrolls["5"] or 0
+    -- แก้ไข: เช็คว่ามี table Scrolls หรือไม่ก่อนเข้าถึง index "5"
+    local inv = replica.Data.ItemsService.Inventory
+    local scrolls = (inv.Scrolls and inv.Scrolls["5"]) or 0
+    
     if scrolls <= 0 then
         self.StateManager:SetStatus("No Dark Scrolls!", THEME.Fail, self.StatusLabel)
         return
@@ -381,7 +386,11 @@ function ScrollTab:ProcessForging(itemsToForge, replica)
         
         local attempts = 0
         while self.IsForging and not self:IsItemReachedTarget(info) do
-            if (replica.Data.ItemsService.Inventory.Scrolls["5"] or 0) <= 0 then
+            -- [แก้ไข Error] เพิ่ม Safety Check ในลูปด้วย
+            local inv = replica.Data.ItemsService.Inventory
+            local currentScrolls = (inv.Scrolls and inv.Scrolls["5"]) or 0
+            
+            if currentScrolls <= 0 then
                 self.StateManager:SetStatus("Out of Scrolls!", THEME.Fail, self.StatusLabel)
                 self.IsForging = false
                 break
@@ -494,7 +503,9 @@ function ScrollTab:RefreshAccessoryList()
     local replica = ReplicaController:GetReplica()
     if not replica or not replica.Data then return end
     
-    local scrolls = replica.Data.ItemsService.Inventory.Scrolls["5"] or 0
+    -- [แก้ไข Error] เพิ่ม Safety Check
+    local inv = replica.Data.ItemsService.Inventory
+    local scrolls = (inv.Scrolls and inv.Scrolls["5"]) or 0
     self.ScrollCounter.Text = scrolls .. " Scrolls"
     
     local selectedCount = 0
