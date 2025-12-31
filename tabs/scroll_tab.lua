@@ -116,21 +116,16 @@ end
 function ScrollTab:CreateToolbar(parent)
     local THEME = self.Config.THEME
     
-    -- [UI Adjustment] Compact Toolbar
-    -- ลบคำว่า TARGET ออก และปรับขนาดให้เล็กลง (เหลือ 300px)
-    -- ขยับตำแหน่งไปทางซ้ายมากขึ้น (-400) เพื่อไม่ให้ชนกับ Scroll Counter ที่อยู่ขวาสุด
+    -- [แก้ตำแหน่ง] ย้าย Toolbar มาต่อท้ายชื่อ (ชิดซ้าย)
     local toolbar = self.UIFactory.CreateFrame({
         Parent = parent,
         Size = UDim2.new(0, 300, 0, 28), 
-        Position = UDim2.new(1, -400, 0, 8), -- ขยับหนี Scroll Counter
+        Position = UDim2.new(0, 160, 0, 0), -- ชิดซ้าย ระยะห่าง 160 จากขอบ
         BgColor = THEME.CardBg,
         Corner = true,
         Stroke = true
     })
     
-    -- ลบ Label "TARGET:" ออกตามที่ขอ เพื่อประหยัดพื้นที่
-    
-    -- ปรับตำแหน่ง Stat แต่ละตัวให้ชิดซ้ายมากขึ้น เริ่มที่ x=6
     local statConfigs = {
         {key = "Damage", name = "DMG", color = THEME.Fail, pos = 6},
         {key = "MaxHealth", name = "HP", color = THEME.Success, pos = 104},
@@ -141,19 +136,18 @@ function ScrollTab:CreateToolbar(parent)
         self:CreateStatControl(toolbar, cfg.key, cfg.name, cfg.color, cfg.pos)
     end
     
-    -- Scroll Counter (อยู่ขวาสุด)
+    -- [แก้สี] จำนวน Scrolls เปลี่ยนเป็น AccentBlue
     self.ScrollCounter = self.UIFactory.CreateLabel({
         Parent = parent,
         Text = "0 Scrolls",
         Size = UDim2.new(0, 80, 0, 16),
         Position = UDim2.new(1, -88, 0, 6),
-        TextColor = THEME.Success,
+        TextColor = THEME.AccentBlue, -- << เปลี่ยนจาก THEME.Success เป็น AccentBlue
         TextSize = 10,
         Font = Enum.Font.GothamBold,
         TextXAlign = Enum.TextXAlignment.Right
     })
     
-    -- Selected Counter
     self.SelectedCounter = self.UIFactory.CreateLabel({
         Parent = parent,
         Text = "0 Selected",
@@ -163,6 +157,79 @@ function ScrollTab:CreateToolbar(parent)
         TextSize = 9,
         Font = Enum.Font.Gotham,
         TextXAlign = Enum.TextXAlignment.Right
+    })
+end
+
+function ScrollTab:CreateStatControl(parent, statKey, displayName, color, xPos)
+    local THEME = self.Config.THEME
+    
+    self.UIFactory.CreateLabel({
+        Parent = parent,
+        Text = displayName,
+        Size = UDim2.new(0, 25, 0, 16),
+        Position = UDim2.new(0, xPos, 0, 6),
+        TextColor = color,
+        TextSize = 9,
+        Font = Enum.Font.GothamBold,
+        TextXAlign = Enum.TextXAlignment.Left
+    })
+    
+    local valueBox = Instance.new("TextBox", parent)
+    valueBox.Size = UDim2.new(0, 30, 0, 16)
+    valueBox.Position = UDim2.new(0, xPos + 26, 0, 6)
+    valueBox.BackgroundColor3 = THEME.BtnDefault
+    valueBox.Text = tostring(self.TargetSettings[statKey]) .. "%"
+    valueBox.TextColor3 = THEME.TextWhite
+    valueBox.TextSize = 9
+    valueBox.Font = Enum.Font.GothamBold
+    valueBox.TextXAlignment = Enum.TextXAlignment.Center
+    valueBox.BorderSizePixel = 0
+    self.UIFactory.AddCorner(valueBox, 4)
+    
+    valueBox.FocusLost:Connect(function()
+        local num = tonumber(valueBox.Text:gsub("%%", ""))
+        if num and num >= 0 and num <= 40 then
+            self.TargetSettings[statKey] = num
+            valueBox.Text = num .. "%"
+            self.NeedsUpdate = true
+        else
+            valueBox.Text = self.TargetSettings[statKey] .. "%"
+        end
+    end)
+    
+    -- [แก้สี] ปุ่ม + เปลี่ยนเป็น AccentBlue
+    local plusBtn = self.UIFactory.CreateButton({
+        Parent = parent,
+        Size = UDim2.new(0, 16, 0, 16),
+        Position = UDim2.new(0, xPos + 58, 0, 6),
+        Text = "+",
+        BgColor = THEME.AccentBlue, -- << เปลี่ยนตรงนี้ (เดิมเป็นสีเขียว 50, 120, 50)
+        TextSize = 10,
+        Font = Enum.Font.GothamBold,
+        OnClick = function()
+            if self.TargetSettings[statKey] < 40 then
+                self.TargetSettings[statKey] = math.min(40, self.TargetSettings[statKey] + 5)
+                valueBox.Text = self.TargetSettings[statKey] .. "%"
+                self.NeedsUpdate = true
+            end
+        end
+    })
+    
+    local minusBtn = self.UIFactory.CreateButton({
+        Parent = parent,
+        Size = UDim2.new(0, 16, 0, 16),
+        Position = UDim2.new(0, xPos + 76, 0, 6),
+        Text = "-",
+        BgColor = Color3.fromRGB(120, 50, 50), -- สีแดงคงเดิม
+        TextSize = 10,
+        Font = Enum.Font.GothamBold,
+        OnClick = function()
+            if self.TargetSettings[statKey] > 0 then
+                self.TargetSettings[statKey] = math.max(0, self.TargetSettings[statKey] - 5)
+                valueBox.Text = self.TargetSettings[statKey] .. "%"
+                self.NeedsUpdate = true
+            end
+        end
     })
 end
 
